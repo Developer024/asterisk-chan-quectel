@@ -64,6 +64,7 @@
         _( AT_DDSETEX0,     "AT+CPCMREG=0") \
 	_( AT_DTMF,         "AT^DTMF") \
 	_( AT_QTONEDET,     "AT+QTONEDET") \
+	_( AT_QMIC,         "AT+QMIC") \
 	_( AT_E,            "ATE") \
 \
 	_( AT_U2DIAG,       "AT^U2DIAG") \
