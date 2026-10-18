@@ -183,6 +183,10 @@ EXPORT_DEF void dc_sconfig_fill(struct ast_config * cfg, const char * cat, struc
 					ast_log(LOG_ERROR, "Invalid value for 'qmic' '%s', expected <txgain>,<txdgain> in 0-65535, not set\n", v->value);
 			}
 		}
+		else if (!strcasecmp (v->name, "epsregistration"))
+		{
+			config->epsregistration = ast_true (v->value);	/* epsregistration is set to 0 if invalid */
+		}
 		else if (!strcasecmp (v->name, "moduledtmf"))
 		{
 			config->moduledtmf = ast_true (v->value);		/* moduledtmf is set to 0 if invalid */

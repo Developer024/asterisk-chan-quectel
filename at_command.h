@@ -65,6 +65,8 @@
 	_( AT_DTMF,         "AT^DTMF") \
 	_( AT_QTONEDET,     "AT+QTONEDET") \
 	_( AT_QMIC,         "AT+QMIC") \
+	_( AT_CEREG,        "AT+CEREG?") \
+	_( AT_CEREG_INIT,   "AT+CEREG=") \
 	_( AT_E,            "ATE") \
 \
 	_( AT_U2DIAG,       "AT^U2DIAG") \

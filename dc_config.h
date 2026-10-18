@@ -78,6 +78,7 @@ typedef struct dc_sconfig
 	unsigned int		resetquectel:1;			/*! 1 */
 	unsigned int		disablesms:1;			/*! 0 */
 	unsigned int		moduledtmf:1;			/*! 0 incoming DTMF from module +QTONEDET reports */
+	unsigned int		epsregistration:1;		/*! 0 LTE (+CEREG) registration also allows calls */
 	char			qmic[16];			/*!< "<txgain>,<txdgain>" sent as AT+QMIC on device initialization, empty = not sent */
 	dev_state_t		initstate;			/*! DEV_STATE_STARTED */
 //	unsigned int		disable:1;			/*! 0 */

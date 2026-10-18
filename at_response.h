@@ -65,6 +65,7 @@ struct iovec;
 	_( RCEND,       "CALLEND",      "REMOTE CALL END") \
 	_( CCWA,        "+CCWA",        "+CCWA:") \
 	_( QTONEDET,    "+QTONEDET",    "+QTONEDET:") \
+	_( CEREG,       "+CEREG",       "+CEREG:") \
 /* AT_RESPONSES_TABLE */
 
 
@@ -77,7 +78,7 @@ typedef enum {
 
 	/* Hackish way to maintain MAX and MIN responses for compatibility */
 	RES_MIN = RES_PARSE_ERROR,
-	RES_MAX = RES_QTONEDET,
+	RES_MAX = RES_CEREG,
 } at_res_t;
 
 /*! response description */
