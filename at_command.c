@@ -763,8 +763,9 @@ EXPORT_DEF int at_enqueue_status_poll(struct cpvt *cpvt)
 					continue;
 				break;
 			case CMD_AT_QCFG_IMS:
-				/* only needed when AT+CIREG? is not supported */
-				if (pvt->no_qcfg_ims || !pvt->no_cireg)
+				/* only needed when AT+CIREG? is not supported; until AT+CIREG? has answered
+				 * (first poll) send both, so the IMS state is known after one poll */
+				if (pvt->no_qcfg_ims || (!pvt->no_cireg && pvt->ims_reg_status != -1))
 					continue;
 				break;
 			case CMD_AT_QENG:
