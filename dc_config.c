@@ -183,6 +183,14 @@ EXPORT_DEF void dc_sconfig_fill(struct ast_config * cfg, const char * cat, struc
 					ast_log(LOG_ERROR, "Invalid value for 'qmic' '%s', expected <txgain>,<txdgain> in 0-65535, not set\n", v->value);
 			}
 		}
+		else if (!strcasecmp (v->name, "statusinterval"))
+		{
+			int val;
+			if (sscanf (v->value, "%d", &val) == 1 && (val == 0 || (val >= 10 && val <= 3600)))
+				config->statusinterval = val;
+			else
+				ast_log(LOG_ERROR, "Invalid value for 'statusinterval' '%s', expected 0 or 10-3600, not changed\n", v->value);
+		}
 		else if (!strcasecmp (v->name, "epsregistration"))
 		{
 			config->epsregistration = ast_true (v->value);	/* epsregistration is set to 0 if invalid */

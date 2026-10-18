@@ -177,6 +177,19 @@ typedef struct pvt
 	/* device state */
 	int			gsm_reg_status;
 	int			eps_reg_status;			/*!< +CEREG <stat>, -1 unknown */
+	/* filled by the periodic status poll (statusinterval) */
+	int			ims_reg_status;			/*!< +CIREG <reg_info>: 0 not registered, 1 registered, -1 unknown */
+	int			sms_used;			/*!< SIM SMS storage in use (+CPMS), -1 unknown */
+	int			sms_total;			/*!< SIM SMS storage size (+CPMS), -1 unknown */
+	char			sig_mode[16];			/*!< +QCSQ <sysmode>, empty = unknown */
+	int			sig_val[4];			/*!< +QCSQ values; for LTE: rssi, rsrp, sinr, rsrq */
+	int			sig_count;			/*!< number of values in sig_val */
+	char			nw_act[24];			/*!< +QNWINFO <act>, e.g. "FDD LTE" */
+	char			nw_oper[12];			/*!< +QNWINFO <oper>, numeric MCC+MNC */
+	char			nw_band[24];			/*!< +QNWINFO <band>, e.g. "LTE BAND 3" */
+	int			nw_channel;			/*!< +QNWINFO <channel>, -1 unknown */
+	char			iccid[24];			/*!< +QCCID, empty = unknown */
+	time_t			last_status_poll;		/*!< time of the last status poll, 0 = never */
 	int			rssi;
 	int			linkmode;
 	int			linksubmode;
@@ -199,6 +212,11 @@ typedef struct pvt
 	unsigned int		gsm_registered:1;		/*!< do we have an registration to a GSM */
 	unsigned int		cs_registered:1;		/*!< +CREG registered (home or roaming) */
 	unsigned int		eps_registered:1;		/*!< +CEREG registered (home or roaming) */
+	unsigned int		no_qccid:1;			/*!< module answered ERROR to AT+QCCID, not polled again */
+	unsigned int		no_cireg:1;			/*!< same for AT+CIREG? */
+	unsigned int		no_qcsq:1;			/*!< same for AT+QCSQ */
+	unsigned int		no_qnwinfo:1;			/*!< same for AT+QNWINFO */
+	unsigned int		no_cpms_q:1;			/*!< same for AT+CPMS? */
 	unsigned int		dialing;			/*!< HW state; true from ATD response OK until CEND or CONN for this call idx */
 	unsigned int		ring:1;				/*!< HW state; true if has incoming call from first RING until CEND or CONN */
 	unsigned int		cwaiting:1;			/*!< HW state; true if has incoming call waiting from first CCWA until CEND or CONN for */

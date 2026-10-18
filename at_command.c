@@ -706,6 +706,71 @@ EXPORT_DEF int at_enqueue_ping(struct cpvt *cpvt)
 }
 
 /*!
+ * \brief Enqueue the periodic status queries (statusinterval)
+ * \param cpvt -- cpvt structure
+ * \return 0 on success
+ *
+ * Signal, IMS (VoLTE) registration, serving network and SIM SMS storage. A command the
+ * module answers with ERROR is not sent again until the device reconnects.
+ */
+EXPORT_DEF int at_enqueue_status_poll(struct cpvt *cpvt)
+{
+	static const char cmd_csq[] = "AT+CSQ\r";
+	static const char cmd_qccid[] = "AT+QCCID\r";
+	static const char cmd_cireg[] = "AT+CIREG?\r";
+	static const char cmd_qcsq[] = "AT+QCSQ\r";
+	static const char cmd_qnwinfo[] = "AT+QNWINFO\r";
+	static const char cmd_cpms_q[] = "AT+CPMS?\r";
+	static const at_queue_cmd_t st_cmds[] = {
+		ATQ_CMD_DECLARE_STF(CMD_AT_CSQ, RES_OK, cmd_csq, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_QCCID, RES_OK, cmd_qccid, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_CIREG, RES_OK, cmd_cireg, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_QCSQ, RES_OK, cmd_qcsq, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_QNWINFO, RES_OK, cmd_qnwinfo, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_CPMS_Q, RES_OK, cmd_cpms_q, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+	};
+	at_queue_cmd_t cmds[ITEMS_OF(st_cmds)];
+	const struct pvt *pvt = cpvt->pvt;
+	unsigned in, out;
+
+	for (in = out = 0; in < ITEMS_OF(st_cmds); in++)
+	{
+		switch (st_cmds[in].cmd)
+		{
+			case CMD_AT_QCCID:
+				if (pvt->no_qccid || pvt->iccid[0])
+					continue;
+				break;
+			case CMD_AT_CIREG:
+				if (pvt->no_cireg)
+					continue;
+				break;
+			case CMD_AT_QCSQ:
+				if (pvt->no_qcsq)
+					continue;
+				break;
+			case CMD_AT_QNWINFO:
+				if (pvt->no_qnwinfo)
+					continue;
+				break;
+			case CMD_AT_CPMS_Q:
+				if (pvt->no_cpms_q || !pvt->has_sms)
+					continue;
+				break;
+			default:
+				break;
+		}
+		cmds[out++] = st_cmds[in];
+	}
+
+	if (at_queue_insert_const(cpvt, cmds, out, 0) != 0) {
+		chan_quectel_err = E_QUEUE;
+		return -1;
+	}
+	return 0;
+}
+
+/*!
  * \brief Enqueue user-specified command
  * \param cpvt -- cpvt structure
  * \param input -- user's command
