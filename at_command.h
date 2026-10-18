@@ -72,6 +72,8 @@
 	_( AT_QCSQ,         "AT+QCSQ") \
 	_( AT_QNWINFO,      "AT+QNWINFO") \
 	_( AT_CPMS_Q,       "AT+CPMS?") \
+	_( AT_QCFG_IMS,     "AT+QCFG=\"ims\"") \
+	_( AT_QENG,         "AT+QENG") \
 	_( AT_E,            "ATE") \
 \
 	_( AT_U2DIAG,       "AT^U2DIAG") \

@@ -189,6 +189,9 @@ typedef struct pvt
 	char			nw_band[24];			/*!< +QNWINFO <band>, e.g. "LTE BAND 3" */
 	int			nw_channel;			/*!< +QNWINFO <channel>, -1 unknown */
 	char			iccid[24];			/*!< +QCCID, empty = unknown */
+	char			lte_cell_id[12];		/*!< +QENG "servingcell" LTE cell id (hex), empty = unknown */
+	char			cell_tac[8];			/*!< +QENG "servingcell" tracking area code (hex) */
+	int			cell_pci;			/*!< +QENG "servingcell" physical cell id, -1 unknown */
 	time_t			last_status_poll;		/*!< time of the last status poll, 0 = never */
 	int			rssi;
 	int			linkmode;
@@ -217,6 +220,8 @@ typedef struct pvt
 	unsigned int		no_qcsq:1;			/*!< same for AT+QCSQ */
 	unsigned int		no_qnwinfo:1;			/*!< same for AT+QNWINFO */
 	unsigned int		no_cpms_q:1;			/*!< same for AT+CPMS? */
+	unsigned int		no_qcfg_ims:1;			/*!< same for AT+QCFG="ims" */
+	unsigned int		no_qeng:1;			/*!< same for AT+QENG="servingcell" */
 	unsigned int		dialing;			/*!< HW state; true from ATD response OK until CEND or CONN for this call idx */
 	unsigned int		ring:1;				/*!< HW state; true if has incoming call from first RING until CEND or CONN */
 	unsigned int		cwaiting:1;			/*!< HW state; true if has incoming call waiting from first CCWA until CEND or CONN for */

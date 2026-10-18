@@ -710,8 +710,9 @@ EXPORT_DEF int at_enqueue_ping(struct cpvt *cpvt)
  * \param cpvt -- cpvt structure
  * \return 0 on success
  *
- * Signal, IMS (VoLTE) registration, serving network and SIM SMS storage. A command the
- * module answers with ERROR is not sent again until the device reconnects.
+ * Signal, IMS (VoLTE) registration, serving network and cell, and SIM SMS storage. A command
+ * the module answers with ERROR is not sent again until the device reconnects. IMS state comes
+ * from AT+CIREG? (3GPP) or, on firmware without it (e.g. EC20CEFAGR08A03M4G), AT+QCFG="ims".
  */
 EXPORT_DEF int at_enqueue_status_poll(struct cpvt *cpvt)
 {
@@ -721,6 +722,8 @@ EXPORT_DEF int at_enqueue_status_poll(struct cpvt *cpvt)
 	static const char cmd_qcsq[] = "AT+QCSQ\r";
 	static const char cmd_qnwinfo[] = "AT+QNWINFO\r";
 	static const char cmd_cpms_q[] = "AT+CPMS?\r";
+	static const char cmd_qcfg_ims[] = "AT+QCFG=\"ims\"\r";
+	static const char cmd_qeng[] = "AT+QENG=\"servingcell\"\r";
 	static const at_queue_cmd_t st_cmds[] = {
 		ATQ_CMD_DECLARE_STF(CMD_AT_CSQ, RES_OK, cmd_csq, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
 		ATQ_CMD_DECLARE_STF(CMD_AT_QCCID, RES_OK, cmd_qccid, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
@@ -728,6 +731,8 @@ EXPORT_DEF int at_enqueue_status_poll(struct cpvt *cpvt)
 		ATQ_CMD_DECLARE_STF(CMD_AT_QCSQ, RES_OK, cmd_qcsq, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
 		ATQ_CMD_DECLARE_STF(CMD_AT_QNWINFO, RES_OK, cmd_qnwinfo, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
 		ATQ_CMD_DECLARE_STF(CMD_AT_CPMS_Q, RES_OK, cmd_cpms_q, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_QCFG_IMS, RES_OK, cmd_qcfg_ims, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
+		ATQ_CMD_DECLARE_STF(CMD_AT_QENG, RES_OK, cmd_qeng, ATQ_CMD_FLAG_IGNORE | ATQ_CMD_FLAG_SUPPRESS_ERROR),
 	};
 	at_queue_cmd_t cmds[ITEMS_OF(st_cmds)];
 	const struct pvt *pvt = cpvt->pvt;
@@ -755,6 +760,15 @@ EXPORT_DEF int at_enqueue_status_poll(struct cpvt *cpvt)
 				break;
 			case CMD_AT_CPMS_Q:
 				if (pvt->no_cpms_q || !pvt->has_sms)
+					continue;
+				break;
+			case CMD_AT_QCFG_IMS:
+				/* only needed when AT+CIREG? is not supported */
+				if (pvt->no_qcfg_ims || !pvt->no_cireg)
+					continue;
+				break;
+			case CMD_AT_QENG:
+				if (pvt->no_qeng)
 					continue;
 				break;
 			default:

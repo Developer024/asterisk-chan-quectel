@@ -414,12 +414,17 @@ static void pvt_reset_status_poll (struct pvt* pvt)
 	pvt->nw_band[0] = '\0';
 	pvt->nw_channel = -1;
 	pvt->iccid[0] = '\0';
+	pvt->lte_cell_id[0] = '\0';
+	pvt->cell_tac[0] = '\0';
+	pvt->cell_pci = -1;
 	pvt->last_status_poll = 0;
 	pvt->no_qccid = 0;
 	pvt->no_cireg = 0;
 	pvt->no_qcsq = 0;
 	pvt->no_qnwinfo = 0;
 	pvt->no_cpms_q = 0;
+	pvt->no_qcfg_ims = 0;
+	pvt->no_qeng = 0;
 }
 
 #/* phone monitor thread pvt cleanup */

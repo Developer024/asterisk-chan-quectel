@@ -389,6 +389,8 @@ static int at_response_ok (struct pvt* pvt, at_res_t res)
 			case CMD_AT_QCSQ:
 			case CMD_AT_QNWINFO:
 			case CMD_AT_CPMS_Q:
+			case CMD_AT_QCFG_IMS:
+			case CMD_AT_QENG:
 				ast_debug (3, "[%s] Status query '%s' done\n", PVT_ID(pvt), at_cmd2str (ecmd->cmd));
 				break;
 			case CMD_USER:
@@ -705,6 +707,12 @@ static int at_response_error (struct pvt* pvt, at_res_t res)
 				goto status_unsupported;
 			case CMD_AT_QNWINFO:
 				pvt->no_qnwinfo = 1;
+				goto status_unsupported;
+			case CMD_AT_QCFG_IMS:
+				pvt->no_qcfg_ims = 1;
+				goto status_unsupported;
+			case CMD_AT_QENG:
+				pvt->no_qeng = 1;
 				goto status_unsupported;
 			case CMD_AT_CPMS_Q:
 				pvt->no_cpms_q = 1;
@@ -2026,6 +2034,46 @@ static int at_response_qnwinfo (struct pvt* pvt, const char* str)
 }
 
 /*!
+ * \brief Handle +QCFG; only "ims": +QCFG: "ims",<ims_mode>,<volte_state>, state 1 = VoLTE ready
+ */
+static int at_response_qcfg (struct pvt* pvt, const char* str)
+{
+	int mode, state;
+
+	if (sscanf (str + STRLEN("+QCFG:"), " \"ims\",%d,%d", &mode, &state) == 2)
+		pvt->ims_reg_status = state ? 1 : 0;
+	return 0;
+}
+
+/*!
+ * \brief Handle +QENG: "servingcell": cell id, PCI and TAC of the LTE serving cell
+ *
+ * +QENG: "servingcell",<state>,"LTE",<is_tdd>,<mcc>,<mnc>,<cellid>,<pcid>,<earfcn>,<band>,<ul_bw>,<dl_bw>,<tac>,...
+ * Other modes (or "SEARCH", no service) only clear the values.
+ */
+static int at_response_qeng (struct pvt* pvt, const char* str)
+{
+	char cell[12], tac[8];
+	int pci;
+
+	if (strncmp (ast_skip_blanks (str + STRLEN("+QENG:")), "\"servingcell\"", 13))
+		return 0;
+	if (sscanf (str + STRLEN("+QENG:"), " \"servingcell\",\"%*[^\"]\",\"LTE\",\"%*[^\"]\",%*d,%*d,%11[0-9A-Fa-f],%d,%*d,%*d,%*d,%*d,%7[0-9A-Fa-f]", cell, &pci, tac) == 3)
+	{
+		ast_copy_string (pvt->lte_cell_id, cell, sizeof (pvt->lte_cell_id));
+		ast_copy_string (pvt->cell_tac, tac, sizeof (pvt->cell_tac));
+		pvt->cell_pci = pci;
+	}
+	else
+	{
+		pvt->lte_cell_id[0] = '\0';
+		pvt->cell_tac[0] = '\0';
+		pvt->cell_pci = -1;
+	}
+	return 0;
+}
+
+/*!
  * \brief Handle +CPMS: SIM SMS storage use, first memory only
  *
  * Query reply: +CPMS: "SM",<used>,<total>,...; reply to AT+CPMS=...: +CPMS: <used>,<total>,...
@@ -2299,6 +2347,12 @@ int at_response (struct pvt* pvt, const struct iovec iov[2], int iovcnt, at_res_
 
 			case RES_QNWINFO:
 				return at_response_qnwinfo (pvt, str);
+
+			case RES_QCFG:
+				return at_response_qcfg (pvt, str);
+
+			case RES_QENG:
+				return at_response_qeng (pvt, str);
 
 			case RES_CONF: 
                                       return 0;

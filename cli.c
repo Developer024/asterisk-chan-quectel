@@ -216,7 +216,7 @@ static char* cli_show_device_state (struct ast_cli_entry* e, int cmd, struct ast
 		ast_cli (a->fd, "  EPS Registration Status : %s\n", GSM_regstate2str(pvt->eps_reg_status));
 		if (CONF_SHARED(pvt, statusinterval) > 0)
 		{
-			ast_cli (a->fd, "  IMS Registration Status : %s\n", pvt->no_cireg ? "Not supported" :
+			ast_cli (a->fd, "  IMS Registration Status : %s\n", (pvt->no_cireg && pvt->no_qcfg_ims) ? "Not supported" :
 				pvt->ims_reg_status == 1 ? "Registered" : pvt->ims_reg_status == 0 ? "Not registered" : "Unknown");
 			ast_cli (a->fd, "  ICCID                   : %s\n", pvt->iccid[0] ? pvt->iccid : (pvt->no_qccid ? "Not supported" : "Unknown"));
 			ast_cli (a->fd, "  Access Technology       : %s\n", pvt->nw_act[0] ? pvt->nw_act : (pvt->no_qnwinfo ? "Not supported" : "Unknown"));
@@ -226,6 +226,12 @@ static char* cli_show_device_state (struct ast_cli_entry* e, int cmd, struct ast
 				ast_cli (a->fd, "  Channel                 : %d\n", pvt->nw_channel);
 			else
 				ast_cli (a->fd, "  Channel                 : Unknown\n");
+			ast_cli (a->fd, "  LTE Cell ID             : %s\n", pvt->lte_cell_id[0] ? pvt->lte_cell_id : (pvt->no_qeng ? "Not supported" : "Unknown"));
+			if (pvt->cell_pci >= 0)
+				ast_cli (a->fd, "  PCI                     : %d\n", pvt->cell_pci);
+			else
+				ast_cli (a->fd, "  PCI                     : Unknown\n");
+			ast_cli (a->fd, "  TAC                     : %s\n", pvt->cell_tac[0] ? pvt->cell_tac : "Unknown");
 			ast_cli (a->fd, "  Signal Mode             : %s\n", pvt->sig_mode[0] ? pvt->sig_mode : (pvt->no_qcsq ? "Not supported" : "Unknown"));
 			if (!strcmp (pvt->sig_mode, "LTE") && pvt->sig_count >= 4)
 			{
